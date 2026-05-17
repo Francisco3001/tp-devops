@@ -29,3 +29,5 @@ jobs:
 
       - name: Push image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/tp-devops
+
+      - run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
