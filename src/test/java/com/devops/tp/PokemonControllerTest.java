@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(initializers = DotenvConfig.class)
 @ActiveProfiles("test")
 class PokemonControllerTest {
 
