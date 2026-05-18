@@ -3,11 +3,13 @@ name: CI-CD
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     env:
       DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
@@ -15,6 +17,7 @@ jobs:
       TEST_DB_URL: ${{ secrets.TEST_DB_URL }}
       TEST_DB_USERNAME: ${{ secrets.TEST_DB_USERNAME }}
       TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/tp-devops
 
     steps:
       - name: Checkout repo
@@ -33,12 +36,24 @@ jobs:
         run: ./mvnw clean test
 
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/tp-devops .
+        if: github.event_name == 'push'
+        run: |
+          docker build \
+            -t $IMAGE_NAME:${{ github.sha }} \
+            -t $IMAGE_NAME:latest \
+            .
 
       - name: Login to DockerHub
+        if: github.event_name == 'push'
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Push image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/tp-devops
+        if: github.event_name == 'push'
+        run: |
+          docker push $IMAGE_NAME:${{ github.sha }}
+          docker push $IMAGE_NAME:latest
 
-      - run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+      - name: Trigger Render deploy with specific image version
+        if: github.event_name == 'push'
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}&imgURL=docker.io/${IMAGE_NAME}:${{ github.sha }}"
