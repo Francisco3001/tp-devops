@@ -15,5 +15,7 @@ public class DotenvConfig implements ApplicationContextInitializer<ConfigurableA
         dotenv.entries().forEach(entry ->
                 System.setProperty(entry.getKey(), entry.getValue())
         );
+        
+        //hola
     }
 }
