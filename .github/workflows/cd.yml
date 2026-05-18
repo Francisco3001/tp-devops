@@ -38,4 +38,4 @@ jobs:
 
       - name: Trigger Render deploy with specific image version
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}&imgURL=docker.io/${IMAGE_NAME}:${IMAGE_SHA}"
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
