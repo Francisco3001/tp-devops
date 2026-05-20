@@ -31,5 +31,5 @@ jobs:
       - name: Dar permisos a mvnw
         run: chmod +x mvnw
 
-      - name: Build and test
+      - name: Buildeo y testeo
         run: ./mvnw clean test
