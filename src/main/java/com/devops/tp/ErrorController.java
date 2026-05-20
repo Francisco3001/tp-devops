@@ -10,6 +10,6 @@ public class ErrorController {
 
     @GetMapping("/error")
     public String triggerError() {
-        throw new RuntimeException("Simulated error for monitoring"); //error de prueba
+        throw new RuntimeException("Simulated error for monitoring"); //error de
     }
 }
