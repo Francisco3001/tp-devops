@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn -q -e -DskipTests dependency:go-offline
 
-# Se copia el código cambio para pruebas
+# Se copia el código asd 
 COPY src ./src
 
 # Se compila
