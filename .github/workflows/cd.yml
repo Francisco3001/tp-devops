@@ -6,13 +6,18 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' &&  github.event.workflow_run.head_branch == 'main'}}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/tp-devops
+      DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/tp-devops
+      GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/tp-devops
       IMAGE_SHA: ${{ github.event.workflow_run.head_sha }}
 
     steps:
@@ -21,23 +26,31 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Build imagen docker
+      - name: Build Docker image
         run: |
           docker build \
-            -t $IMAGE_NAME:$IMAGE_SHA \
-            -t $IMAGE_NAME:latest \
+            -t $DOCKER_IMAGE:$IMAGE_SHA \
+            -t $DOCKER_IMAGE:latest \
+            -t $GHCR_IMAGE:$IMAGE_SHA \
+            -t $GHCR_IMAGE:latest \
             .
 
-      - name: Login DockerHub
+      - name: Login Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Push image ss
+      - name: Login GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Push Docker Hub
         run: |
-          docker push $IMAGE_NAME:$IMAGE_SHA
-          docker push $IMAGE_NAME:latest
+          docker push $DOCKER_IMAGE:$IMAGE_SHA
+          docker push $DOCKER_IMAGE:latest
 
-      - name: Trigger Render con imagen en especifico
+      - name: Push GitHub Container Registry
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}&imgURL=docker.io/$IMAGE_NAME:$IMAGE_SHA"
+          docker push $GHCR_IMAGE:$IMAGE_SHA
+          docker push $GHCR_IMAGE:latest
 
-
+      - name: Trigger Render con imagen específica
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}&imgURL=docker.io/$DOCKER_IMAGE:$IMAGE_SHA"
