@@ -17,7 +17,7 @@ jobs:
 
     env:
       DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/tp-devops
-      GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/tp-devops
+      GHCR_IMAGE: ghcr.io/francisco3001/tp-devops
       IMAGE_SHA: ${{ github.event.workflow_run.head_sha }}
 
     steps:
